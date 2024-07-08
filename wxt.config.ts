@@ -6,5 +6,6 @@ export default defineConfig({
   manifest: {
     permissions: ["tabs"],
     action: {},
+    host_permissions: ["https://i.weread.qq.com/*"],
   },
 });

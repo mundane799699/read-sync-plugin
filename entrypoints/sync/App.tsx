@@ -6,7 +6,6 @@ function App() {
 
   useEffect(() => {
     fetchData();
-    // 添加标签页激活监听器
     const handleTabActivated = (activeInfo: any) => {
       browser.tabs.get(activeInfo.tabId).then((tab) => {
         if (!isLoggedIn && tab.url === browser.runtime.getURL("/sync.html")) {
@@ -16,31 +15,23 @@ function App() {
     };
 
     browser.tabs.onActivated.addListener(handleTabActivated);
-    // 清理函数
     return () => {
       browser.tabs.onActivated.removeListener(handleTabActivated);
     };
   }, []);
   const fetchData = async () => {
     const res = await browser.runtime.sendMessage("fetchNotebooks");
-    console.log(res);
-
     const { status, data } = res;
     if (status === 200) {
-      // 成功获取数据
-      console.log("Notebooks data:", data);
       const { books } = data;
       setBooks(books);
       setIsLoggedIn(true);
     } else if (status === 401) {
-      // 处理错误
-      console.log("未登录，请先登录");
       setIsLoggedIn(false);
     }
   };
 
   const openWxRead = () => {
-    // 在新标签页打开https://weread.qq.com/
     browser.tabs.create({ url: "https://weread.qq.com", active: true });
   };
 

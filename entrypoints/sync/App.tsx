@@ -1,8 +1,18 @@
+import React, { useState, useEffect } from "react";
 import "./App.css";
+import { useAuth } from "@/context/AuthContext";
+import axios from "@/services/ajax";
+import toast from "react-hot-toast";
 
 function App() {
   const [books, setBooks] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user, logout, login } = useAuth();
+  const [loginData, setLoginData] = useState({
+    username: "",
+    password: "",
+  });
 
   useEffect(() => {
     fetchData();
@@ -19,6 +29,7 @@ function App() {
       browser.tabs.onActivated.removeListener(handleTabActivated);
     };
   }, []);
+
   const fetchData = async () => {
     const res = await browser.runtime.sendMessage("fetchNotebooks");
     const { status, data } = res;
@@ -35,8 +46,59 @@ function App() {
     browser.tabs.create({ url: "https://weread.qq.com", active: true });
   };
 
+  const openSignup = () => {
+    browser.tabs.create({ url: "http://localhost:3000/signup", active: true });
+  };
+
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+    // 调用登录接口
+    try {
+      login(loginData);
+      toast.success("登录成功");
+      setShowLoginModal(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error("登录失败，请检查用户名或密码");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <>
+    <div className="container mx-auto p-4 relative">
+      {user?.userName ? (
+        <div className="absolute top-2 right-2 space-x-2">
+          <button className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600">
+            {user?.nickName}
+          </button>
+          <button
+            onClick={() => logout()}
+            className="px-4 py-2 text-sm font-medium text-green-500 border border-green-500 rounded-md hover:bg-blue-50"
+          >
+            退出登录
+          </button>
+        </div>
+      ) : (
+        <div className="absolute top-2 right-2 space-x-2">
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600"
+          >
+            登录
+          </button>
+          <button
+            onClick={openSignup}
+            className="px-4 py-2 text-sm font-medium text-green-500 border border-green-500 rounded-md hover:bg-blue-50"
+          >
+            注册
+          </button>
+        </div>
+      )}
+
       {isLoggedIn ? (
         <ul className="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
           {books.map((item: any) => (
@@ -61,12 +123,52 @@ function App() {
       ) : (
         <button
           onClick={openWxRead}
-          className="text-lg font-bold text-green-500 rounded-lg border border-green-500 hover:bg-green-500 hover:text-white p-4"
+          className="text-lg font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-lg border p-4"
         >
           登录微信读书网页端
         </button>
       )}
-    </>
+
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">登录</h2>
+            <form onSubmit={handleLogin}>
+              <input
+                type="email"
+                placeholder="邮箱"
+                onChange={(e) =>
+                  setLoginData({ ...loginData, username: e.target.value })
+                }
+                className="w-full mb-2 p-2 border focus:border-green-500 focus:outline-none rounded"
+                required
+              />
+              <input
+                type="password"
+                placeholder="密码"
+                onChange={(e) =>
+                  setLoginData({ ...loginData, password: e.target.value })
+                }
+                className="w-full mb-4 p-2 border focus:border-green-500 focus:outline-none rounded"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full py-2 text-white bg-green-500 rounded hover:bg-green-600"
+              >
+                登录
+              </button>
+            </form>
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="mt-4 text-sm text-gray-500 hover:text-gray-700"
+            >
+              关闭
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

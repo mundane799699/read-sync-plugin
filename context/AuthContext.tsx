@@ -8,6 +8,7 @@ import React, {
 import axios from "@/services/ajax";
 import { setToken, removeToken, getToken } from "@/utils/user-token";
 import { User } from "../types/auth";
+import { loginService, fetchUserInfoService } from "@/services/login";
 
 interface AuthContextType {
   user: User | null;
@@ -31,21 +32,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     getToken().then((token) => {
       console.log("token = ", token);
       if (token) {
-        fetchUserInfo(token);
+        fetchUserInfo();
       } else {
         setLoading(false);
       }
     });
   }, []);
 
-  const fetchUserInfo = async (token: string) => {
+  const fetchUserInfo = async () => {
     try {
-      const response = await axios.get("/getInfo");
-      if (response.data.code === 200) {
-        setUser(response.data.user);
-      } else {
-        removeToken();
-      }
+      const res = await fetchUserInfoService();
+      const { user } = res;
+      setUser(user);
     } catch (error) {
       console.error("Failed to fetch user info", error);
       removeToken();
@@ -56,21 +54,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (loginData: any) => {
     return new Promise<void>(async (resolve, reject) => {
-      const response = await axios.post("/login", loginData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = response.data;
-
-      if (response.status === 200 && data.code === 200) {
-        const { token } = data;
-        setToken(token);
-        fetchUserInfo(token);
+      const res = await loginService(loginData);
+      const { code, token, msg } = res;
+      if (code === 200) {
+        await setToken(token);
+        fetchUserInfo();
         resolve();
       } else {
-        reject(data.msg || "登录失败，请检查用户名或密码");
+        reject(msg || "登录失败，请检查用户名或密码");
       }
     });
   };

@@ -2,7 +2,8 @@ import axios from "axios";
 import { getToken } from "@/utils/user-token";
 
 const instance = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: import.meta.env.VITE_BASE_API,
+  timeout: 30 * 1000,
 });
 
 // request 拦截: 每次请求都带上token
@@ -17,4 +18,10 @@ instance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+instance.interceptors.response.use((res) => {
+  const { data } = res;
+  return data as any;
+});
+
 export default instance;

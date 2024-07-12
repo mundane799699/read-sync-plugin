@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { useAuth } from "@/context/AuthContext";
-import axios from "@/services/ajax";
 import toast from "react-hot-toast";
+import { FluentArrowSync20Regular } from "@/components/Icons";
+import { syncWxReadNotesService } from "@/services/wxReadNote";
 
 function App() {
   const [books, setBooks] = useState([]);
@@ -31,7 +32,7 @@ function App() {
   }, []);
 
   const fetchData = async () => {
-    const res = await browser.runtime.sendMessage("fetchNotebooks");
+    const res = await browser.runtime.sendMessage({ type: "fetchNotebooks" });
     const { status, data } = res;
     if (status === 200) {
       const { books } = data;
@@ -57,7 +58,7 @@ function App() {
     setLoading(true);
     // 调用登录接口
     try {
-      login(loginData);
+      await login(loginData);
       toast.success("登录成功");
       setShowLoginModal(false);
     } catch (error) {
@@ -65,6 +66,41 @@ function App() {
       toast.error("登录失败，请检查用户名或密码");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const sync = async (bookId: string) => {
+    const res = await browser.runtime.sendMessage({
+      type: "syncData",
+      params: { bookId },
+    });
+    const { status, data } = res;
+    if (status === 200) {
+      const { bookmarkData, reviewData } = data;
+      const { book } = bookmarkData;
+      const { author, title } = book;
+      const { reviews } = reviewData;
+      const notes = reviews.map((item: any) => {
+        const { reviewId, review } = item;
+        const { abstract, chapterName, content } = review;
+        return {
+          bookId,
+          reviewId,
+          chapterName,
+          markText: abstract,
+          noteContent: content,
+          type: 1,
+        };
+      });
+      const params = { bookId, bookName: title, notes };
+      const res = await syncWxReadNotesService(params);
+      console.log(res);
+      const { code, msg } = res;
+      if (code === 200) {
+        toast.success(`同步成功，共同步${notes.length}条笔记`);
+      } else {
+        toast.error(`同步失败，${msg}`);
+      }
     }
   };
 
@@ -100,7 +136,7 @@ function App() {
       )}
 
       {isLoggedIn ? (
-        <ul className="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
+        <ul className="mt-10 grid grid-cols-2 gap-4 max-w-4xl mx-auto">
           {books.map((item: any) => (
             <li
               key={item.book.bookId}
@@ -111,11 +147,20 @@ function App() {
                 src={item.book.cover}
                 alt={item.book.title}
               />
-              <div className="flex flex-col justify-between">
-                <h2 className="text-sm font-medium overflow-hidden overflow-ellipsis line-clamp-2 text-left">
-                  {item.book.title}
-                </h2>
-                <h2 className="text-xs text-gray-500 text-left">{`${item.noteCount}条划线 | ${item.reviewCount}条想法`}</h2>
+              <div className="flex flex-1 justify-between">
+                <div className="flex flex-col justify-between">
+                  <h2 className="text-sm font-medium overflow-hidden overflow-ellipsis line-clamp-2 text-left">
+                    {item.book.title}
+                  </h2>
+                  <h2 className="text-xs text-gray-500 text-left">{`${item.noteCount}条划线 | ${item.reviewCount}条想法`}</h2>
+                </div>
+                <div className="flex flex-col justify-between">
+                  <h2 className="text-xs text-gray-500 text-left">详情</h2>
+                  <FluentArrowSync20Regular
+                    onClick={() => sync(item.book.bookId)}
+                    className="text-gray-500 cursor-pointer hover:text-gray-700"
+                  />
+                </div>
               </div>
             </li>
           ))}

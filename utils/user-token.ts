@@ -10,7 +10,6 @@ export async function setToken(token: string) {
 
 export async function getToken() {
   const result = await browser.storage.local.get(KEY);
-  console.log("result = ", result);
   return result[KEY] || null;
 }
 

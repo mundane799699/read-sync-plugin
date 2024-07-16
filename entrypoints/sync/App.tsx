@@ -77,7 +77,7 @@ function App() {
     const { status, data } = res;
     if (status === 200) {
       const { bookmarkData, reviewData } = data;
-      const { book } = bookmarkData;
+      const { book, updated } = bookmarkData;
       const { author, title } = book;
       const { reviews } = reviewData;
       const notes = reviews.map((item: any) => {
@@ -86,13 +86,29 @@ function App() {
         return {
           bookId,
           reviewId,
+          bookName: title,
+          bookAuthor: author,
           chapterName,
           markText: abstract,
           noteContent: content,
           type: 1,
         };
       });
-      const params = { bookId, bookName: title, notes };
+
+      const bookmarks = updated.map((item: any) => {
+        const { bookmarkId, chapterName, markText } = item;
+        return {
+          bookId,
+          reviewId: bookmarkId,
+          bookName: title,
+          bookAuthor: author,
+          chapterName,
+          markText,
+          type: 2,
+        };
+      });
+      notes.push(...bookmarks);
+      const params = { bookId, bookName: title, bookAuthor: author, notes };
       const res = await syncWxReadNotesService(params);
       console.log(res);
       const { code, msg } = res;
@@ -152,7 +168,9 @@ function App() {
                   <h2 className="text-sm font-medium overflow-hidden overflow-ellipsis line-clamp-2 text-left">
                     {item.book.title}
                   </h2>
-                  <h2 className="text-xs text-gray-500 text-left">{`${item.noteCount}条划线 | ${item.reviewCount}条想法`}</h2>
+                  <h2 className="text-xs text-gray-500 text-left">
+                    划线 ({`${item.noteCount}) | 想法 (${item.reviewCount})`}
+                  </h2>
                 </div>
                 <div className="flex flex-col justify-between">
                   <h2 className="text-xs text-gray-500 text-left">详情</h2>

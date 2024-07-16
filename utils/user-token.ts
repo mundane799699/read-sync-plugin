@@ -2,15 +2,20 @@
  * 存储/获取 user token
  */
 
-const KEY = "USER_TOKEN";
+const KEY = "Admin-Token";
 
 export async function setToken(token: string) {
   await browser.storage.local.set({ [KEY]: token });
 }
 
 export async function getToken() {
-  const result = await browser.storage.local.get(KEY);
-  return result[KEY] || null;
+  const token = await browser.cookies.get({
+    url: "http://localhost:8081",
+    name: KEY,
+  });
+  const { value } = token;
+  console.log("token = ", value);
+  return value;
 }
 
 export function removeToken() {

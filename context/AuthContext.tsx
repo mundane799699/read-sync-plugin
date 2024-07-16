@@ -12,8 +12,7 @@ import { loginService, fetchUserInfoService } from "@/services/login";
 
 interface AuthContextType {
   user: User | null;
-  login: (loginData: any) => Promise<void>;
-  logout: () => void;
+  fetchUserInfo: () => Promise<User | null>;
   loading: boolean;
 }
 
@@ -29,24 +28,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     console.log("AuthProvider mounted");
-    getToken().then((token) => {
-      console.log("token = ", token);
-      if (token) {
-        fetchUserInfo();
-      } else {
-        setLoading(false);
-      }
-    });
+    fetchUserInfo();
   }, []);
 
-  const fetchUserInfo = async () => {
+  const fetchUserInfo = async (): Promise<User | null> => {
     try {
+      setLoading(true);
+      const token = await getToken();
+      console.log("token = ", token);
+      if (!token) {
+        return;
+      }
       const res = await fetchUserInfoService();
       const { user } = res;
       setUser(user);
+      return user;
     } catch (error) {
       console.error("Failed to fetch user info", error);
-      removeToken();
+      return null;
     } finally {
       setLoading(false);
     }
@@ -81,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, fetchUserInfo, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -13,8 +13,10 @@ export async function getToken() {
     url: "http://localhost:8081",
     name: KEY,
   });
+  if (!token) {
+    return "";
+  }
   const { value } = token;
-  console.log("token = ", value);
   return value;
 }
 

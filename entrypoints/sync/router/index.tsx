@@ -11,10 +11,6 @@ const routes = [
     path: "/login",
     element: <Login />,
   },
-  {
-    path: "/about",
-    element: <About />,
-  },
 ];
 
 export default routes;

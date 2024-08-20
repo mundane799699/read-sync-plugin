@@ -35,7 +35,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       const token = await getToken();
-      console.log("token = ", token);
       if (!token) {
         return;
       }

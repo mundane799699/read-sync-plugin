@@ -40,13 +40,35 @@ const Login = () => {
     };
   }, []);
 
+  const signIn = () => {
+    browser.tabs.create({
+      url: `${import.meta.env.VITE_BASE_WEB}/signin`,
+      active: true,
+    });
+  };
+
+  const signUp = () => {
+    browser.tabs.create({
+      url: `${import.meta.env.VITE_BASE_WEB}/signup`,
+      active: true,
+    });
+  };
+
   return (
     <div className="bg-orange-100 min-h-screen font-sans flex flex-col">
       <header className="flex justify-between items-center p-4">
         <h1 className="text-4xl font-bold text-orange-500">Readecho</h1>
         <div>
-          <button className="mx-2 text-gray-600">注册</button>
-          <button className="bg-orange-500 text-white px-4 py-2 rounded">
+          <button
+            onClick={signUp}
+            className="mx-2 text-gray-600 border border-orange-500 px-4 py-2 rounded"
+          >
+            注册
+          </button>
+          <button
+            onClick={signIn}
+            className="bg-orange-500 text-white px-4 py-2 rounded"
+          >
             登录
           </button>
         </div>
@@ -67,16 +89,14 @@ const Login = () => {
             </ul>
             <p className="text-sm text-gray-600 mb-4">...更多功能，敬请期待</p>
             <div className="flex space-x-4">
-              <button className="bg-orange-500 text-white px-6 py-2 rounded flex items-center">
+              <button
+                onClick={signUp}
+                className="bg-orange-500 text-white px-6 py-2 rounded flex items-center"
+              >
                 <span className="mr-2">免费注册</span>
               </button>
               <button
-                onClick={() => {
-                  browser.tabs.create({
-                    url: "http://localhost:8081",
-                    active: true,
-                  });
-                }}
+                onClick={signIn}
                 className="border border-orange-500 text-orange-500 px-6 py-2 rounded flex items-center"
               >
                 <Play className="mr-2" size={20} />

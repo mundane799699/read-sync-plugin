@@ -4,8 +4,15 @@ import { defineConfig } from "wxt";
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   manifest: {
-    permissions: ["storage", "tabs", "cookies", "http://localhost:8081/*"],
+    permissions: ["storage", "tabs", "cookies"],
     action: {},
-    host_permissions: ["https://i.weread.qq.com/*", "http://localhost:8081/*"],
+    host_permissions: [
+      "https://i.weread.qq.com/*",
+      "https://readecho.cn/*",
+      "http://localhost:3000/*",
+    ],
+  },
+  runner: {
+    disabled: true,
   },
 });

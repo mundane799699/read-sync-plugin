@@ -10,7 +10,8 @@ export async function setToken(token: string) {
 
 export async function getToken() {
   const token = await browser.cookies.get({
-    url: "http://localhost:8081",
+    // url: "https://readecho.cn",
+    url: import.meta.env.VITE_BASE_WEB,
     name: KEY,
   });
   if (!token) {

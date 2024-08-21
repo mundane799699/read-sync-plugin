@@ -5,6 +5,7 @@ import Loader from "@/components/Loader";
 import toast from "react-hot-toast";
 import { FluentArrowSync20Regular } from "@/components/Icons";
 import { syncWxReadNotesService } from "@/services/wxReadNote";
+import { LucideCheck, LucideRefreshCw } from "lucide-react";
 
 const Home: FC = () => {
   const nav = useNavigate();
@@ -50,6 +51,9 @@ const Home: FC = () => {
     const { status, data } = res;
     if (status === 200) {
       const { books } = data;
+      books.map((item: any) => {
+        item.syncFinished = false;
+      });
       setBooks(books);
       setIsWxReadLoggedIn(true);
     } else if (status === 401) {
@@ -61,7 +65,7 @@ const Home: FC = () => {
     browser.tabs.create({ url: "https://weread.qq.com", active: true });
   };
 
-  const sync = async (bookId: string) => {
+  const sync = async (bookId: string, showToast = true) => {
     const res = await browser.runtime.sendMessage({
       type: "syncData",
       params: { bookId },
@@ -114,38 +118,63 @@ const Home: FC = () => {
         notes,
       };
       const res = await syncWxReadNotesService(params);
-      console.log(res);
       const { code, msg } = res;
       if (code === 200) {
-        toast.success(`同步成功，共同步${notes.length}条笔记`);
+        if (showToast) {
+          toast.success(`同步成功，共同步${notes.length}条笔记`);
+        }
+        setBooks((prevList) => {
+          prevList.find((item) => item.bookId === bookId).syncFinished = true;
+          return [...prevList];
+        });
       } else {
-        toast.error(`同步失败，${msg}`);
+        if (showToast) {
+          toast.error(`同步失败，${msg}`);
+        }
       }
     }
   };
+
+  const syncAll = async () => {
+    for (let i = 0; i < books.length; i++) {
+      const book = books[i];
+      await sync(book.bookId, false);
+    }
+    toast.success("同步完成");
+  };
   return (
-    <div className="bg-orange-100 min-h-screen font-sans">
+    <div className="bg-orange-100 min-h-screen font-sans flex">
       {loading ? (
-        <Loader className="mx-auto" />
+        <Loader className="mx-auto mt-10" />
       ) : (
         <div className="bg-white container mx-auto p-4 relative min-h-screen">
-          <div className="absolute top-2 right-2 space-x-2">
-            <button className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600">
+          <div className="absolute top-2 right-4 space-x-2">
+            <button className="px-4 py-2 text-sm font-medium  text-orange-400 border border-orange-400 rounded-md pointer-events-none">
               {user?.nickName}
             </button>
             <button
               onClick={() =>
                 browser.tabs.create({
                   // url: "http://localhost:3000/dashboard",
-                  url: "https://readecho.cn/dashboard",
+                  url: `${import.meta.env.VITE_BASE_WEB}/dashboard`,
                   active: true,
                 })
               }
-              className="px-4 py-2 text-sm font-medium text-green-500 border border-green-500 rounded-md hover:bg-blue-50"
+              className="px-4 py-2 text-sm font-medium  bg-orange-400 rounded-md hover:bg-orange-500 text-white"
             >
-              去后台查看
+              查看笔记
             </button>
           </div>
+          {isWxReadLoggedIn && (
+            <div className="absolute top-2 left-4 space-x-2">
+              <button
+                onClick={syncAll}
+                className="px-4 py-2 text-sm font-medium  bg-orange-400 rounded-md hover:bg-orange-500 text-white"
+              >
+                一键同步
+              </button>
+            </div>
+          )}
           {isWxReadLoggedIn ? (
             <ul className="mt-10 grid grid-cols-2 gap-4 max-w-4xl mx-auto">
               {books.map((item: any) => (
@@ -170,24 +199,35 @@ const Home: FC = () => {
                         })`}
                       </h2>
                     </div>
-                    <div className="flex flex-col justify-between">
-                      <h2 className="text-xs text-gray-500 text-left">详情</h2>
-                      <FluentArrowSync20Regular
-                        onClick={() => sync(item.book.bookId)}
-                        className="text-gray-500 cursor-pointer hover:text-gray-700"
-                      />
+                    <div className="flex flex-col justify-end">
+                      {item.syncFinished ? (
+                        <LucideCheck
+                          onClick={() => sync(item.book.bookId)}
+                          className="text-slate-400 cursor-pointer hover:text-slate-500"
+                        />
+                      ) : (
+                        <LucideRefreshCw
+                          onClick={() => sync(item.book.bookId)}
+                          className="text-slate-400 cursor-pointer hover:text-slate-500"
+                        />
+                      )}
                     </div>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <button
-              onClick={openWxRead}
-              className="text-lg font-bold text-white bg-blue-500 hover:bg-blue-600 rounded-lg border p-4"
-            >
-              获取微信读书笔记
-            </button>
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-xl font-bold text-slate-400">
+                登录微信读书后，Readecho将自动同步你的书架
+              </p>
+              <button
+                onClick={openWxRead}
+                className="text-lg font-bold text-white bg-orange-400 hover:bg-orange-500 rounded-lg border p-4 mt-10"
+              >
+                登录微信读书
+              </button>
+            </div>
           )}
         </div>
       )}

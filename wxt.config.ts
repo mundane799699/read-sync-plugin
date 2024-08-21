@@ -9,7 +9,6 @@ export default defineConfig({
     host_permissions: [
       "https://i.weread.qq.com/*",
       "https://readecho.cn/*",
-      "http://localhost:3000/*",
     ],
   },
   runner: {

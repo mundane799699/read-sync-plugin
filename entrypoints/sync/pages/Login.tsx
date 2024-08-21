@@ -61,7 +61,7 @@ const Login = () => {
         <div>
           <button
             onClick={signUp}
-            className="mx-2 text-gray-600 border border-orange-500 px-4 py-2 rounded"
+            className="mx-2 text-gray-600 border border-orange-500 px-4 py-2 rounded text-orange-500"
           >
             注册
           </button>

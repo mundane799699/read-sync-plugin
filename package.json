@@ -2,7 +2,7 @@
   "name": "Readecho-同步你的微信读书笔记",
   "description": "只需几步轻松获取并保存微信读书笔记，自定义你的笔记回顾方式，不错过每一个阅读瞬间",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "wxt --mode development",

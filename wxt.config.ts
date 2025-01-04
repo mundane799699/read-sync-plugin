@@ -11,4 +11,9 @@ export default defineConfig({
   runner: {
     disabled: true,
   },
+  dev: {
+    server: {
+      port: 3001,
+    },
+  },
 });

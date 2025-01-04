@@ -1,5 +1,6 @@
 import Home from "../pages/Home";
 import Login from "../pages/Login";
+import Review from "../pages/Review";
 
 const routes = [
   {
@@ -9,6 +10,10 @@ const routes = [
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/review",
+    element: <Review />,
   },
 ];
 

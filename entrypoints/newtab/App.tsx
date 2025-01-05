@@ -153,7 +153,7 @@ const App = () => {
       {/* 新标签页设置按钮 */}
       <button
         onClick={() => setShowNewTabDialog(true)}
-        className={`fixed right-1 top-1 flex items-center gap-2 px-6 py-2.5 rounded-lg transition-colors ${
+        className={`fixed right-2 top-2 p-2.5 rounded-lg transition-colors ${
           currentBackgroundIndex === 0
             ? "bg-[#FF725F] text-white hover:bg-[#FF725F]/90"
             : currentBackgroundIndex === 3

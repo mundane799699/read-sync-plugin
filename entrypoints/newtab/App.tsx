@@ -3,7 +3,7 @@ import ShareDialog from "@/components/ShareDialog";
 import { fetchUserInfoService } from "@/services/login";
 import { getRandomReview } from "@/services/wxReadNote";
 import { Note } from "@/types/note";
-import { Share2, Copy, Check, Shuffle, Image } from "lucide-react";
+import { Share2, Copy, Check, Shuffle, Image, Settings } from "lucide-react";
 import dayjs from "dayjs";
 import Modal from "@/components/Modal";
 import SettingsDialog from "@/components/SettingsDialog";
@@ -35,6 +35,8 @@ const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(dayjs().format("HH:mm"));
+
+  const [showNewTabDialog, setShowNewTabDialog] = useState(false);
 
   useEffect(() => {
     console.log("Current background index:", currentBackgroundIndex);
@@ -148,6 +150,24 @@ const App = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
+      {/* 新标签页设置按钮 */}
+      <button
+        onClick={() => setShowNewTabDialog(true)}
+        className={`fixed right-1 top-1 flex items-center gap-2 px-6 py-2.5 rounded-lg transition-colors ${
+          currentBackgroundIndex === 0
+            ? "bg-[#FF725F] text-white hover:bg-[#FF725F]/90"
+            : currentBackgroundIndex === 3
+            ? "bg-white/5 text-white/70 hover:bg-white/10 backdrop-blur-sm"
+            : currentBackgroundIndex === 4
+            ? "bg-[#2C3333]/10 text-[#2C3333] hover:bg-[#2C3333]/20 backdrop-blur-sm"
+            : currentBackgroundIndex === 5
+            ? "bg-[#2D5A27]/10 text-[#2D5A27] hover:bg-[#2D5A27]/20 backdrop-blur-sm"
+            : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+        }`}
+      >
+        <Settings className="h-5 w-5" />
+      </button>
+
       {/* 主容器：固定宽度和高度 */}
       <div className="w-[1000px] h-[580px] flex flex-col">
         {/* 内容区：使用 flex-1 自动占据剩余空间 */}
@@ -429,13 +449,6 @@ const App = () => {
             <Image className="h-4 w-4" />
             切换背景 {currentBackgroundIndex + 1}/{backgrounds.length}
           </button>
-
-          {/* 分享对话框 */}
-          <ShareDialog
-            isOpen={showShareDialog}
-            onClose={() => setShowShareDialog(false)}
-            note={currentNote}
-          />
         </div>
       </div>
 
@@ -444,6 +457,21 @@ const App = () => {
         isOpen={showShareDialog}
         onClose={() => setShowShareDialog(false)}
         note={currentNote}
+      />
+
+      <NewTabDialog
+        isOpen={showNewTabDialog}
+        onClose={() => setShowNewTabDialog(false)}
+      />
+
+      <Modal
+        isOpen={isModalOpen}
+        onConfirm={() => {
+          handleRandomNote();
+          setIsModalOpen(false);
+        }}
+        title="提示"
+        content="所有笔记都已回顾完，已全部重置回未读状态"
       />
     </div>
   );

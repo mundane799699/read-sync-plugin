@@ -2,6 +2,18 @@ import axios from "axios";
 
 export default defineBackground(() => {
   console.log("Hello background!", { id: browser.runtime.id });
+
+  // 检查是否启用新标签页
+  browser.tabs.onCreated.addListener(async (tab) => {
+    const { enableNewTab } = await browser.storage.local.get("enableNewTab");
+
+    if (tab.url === "chrome://newtab/" && !enableNewTab) {
+      await browser.tabs.update(tab.id, {
+        url: "chrome://newtab",
+      });
+    }
+  });
+
   browser.action.onClicked.addListener(async () => {
     await browser.tabs.create({ url: "/sync.html" });
   });

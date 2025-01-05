@@ -1,17 +1,18 @@
 import { useAuth } from "@/context/AuthContext";
-import React, { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import Loader from "@/components/Loader";
 import toast from "react-hot-toast";
 import { FluentArrowSync20Regular } from "@/components/Icons";
 import { syncWxReadNotesService } from "@/services/wxReadNote";
 import { LucideCheck, LucideRefreshCw } from "lucide-react";
+import NewTabDialog from "@/components/NewTabDialog";
 
-const Home: FC = () => {
+const Home = () => {
   const nav = useNavigate();
   const { user, loading } = useAuth();
   const [books, setBooks] = useState([]);
   const [isWxReadLoggedIn, setIsWxReadLoggedIn] = useState(false);
+  const [showNewTabDialog, setShowNewTabDialog] = useState(false);
   useEffect(() => {
     if (loading) {
       return;
@@ -164,6 +165,12 @@ const Home: FC = () => {
             >
               查看笔记
             </button>
+            <button
+              onClick={() => setShowNewTabDialog(true)}
+              className="px-4 py-2 text-sm font-medium  bg-orange-400 rounded-md hover:bg-orange-500 text-white"
+            >
+              新标签页设置
+            </button>
           </div>
           {isWxReadLoggedIn && (
             <div className="absolute top-2 left-4 space-x-2">
@@ -231,6 +238,11 @@ const Home: FC = () => {
           )}
         </div>
       )}
+
+      <NewTabDialog
+        isOpen={showNewTabDialog}
+        onClose={() => setShowNewTabDialog(false)}
+      />
     </div>
   );
 };

@@ -153,19 +153,19 @@ const App = () => {
       {/* 新标签页设置按钮 */}
       <button
         onClick={() => setShowNewTabDialog(true)}
-        className={`fixed right-2 top-2 p-2.5 rounded-lg transition-colors ${
+        className={`fixed right-6 top-6 p-2 rounded-lg transition-colors ${
           currentBackgroundIndex === 0
-            ? "bg-[#FF725F] text-white hover:bg-[#FF725F]/90"
+            ? "text-[#595959] hover:text-[#262626] hover:bg-[#F5F5F5]"
             : currentBackgroundIndex === 3
-            ? "bg-white/5 text-white/70 hover:bg-white/10 backdrop-blur-sm"
+            ? "text-white/70 hover:bg-white/10"
             : currentBackgroundIndex === 4
-            ? "bg-[#2C3333]/10 text-[#2C3333] hover:bg-[#2C3333]/20 backdrop-blur-sm"
+            ? "text-[#2C3333] hover:bg-[#2C3333]/10"
             : currentBackgroundIndex === 5
-            ? "bg-[#2D5A27]/10 text-[#2D5A27] hover:bg-[#2D5A27]/20 backdrop-blur-sm"
-            : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+            ? "text-[#2D5A27] hover:bg-[#2D5A27]/10"
+            : "text-white/80 hover:bg-white/10"
         }`}
       >
-        <Settings className="h-5 w-5" />
+        <Settings className="h-4 w-4" />
       </button>
 
       {/* 主容器：固定宽度和高度 */}

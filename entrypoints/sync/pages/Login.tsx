@@ -1,4 +1,10 @@
-import { BookOpen, Play } from "lucide-react";
+import { 
+  Cloud, 
+  Download, 
+  BrainCircuit, 
+  Mail,
+  Play 
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
@@ -55,69 +61,70 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-orange-100 min-h-screen font-sans flex flex-col">
-      <header className="flex justify-between items-center p-4">
-        <h1 className="text-4xl font-bold text-orange-500">Readecho</h1>
-        <div>
-          <button
-            onClick={signUp}
-            className="mx-2 border border-orange-500 px-4 py-2 rounded text-orange-500"
-          >
-            注册
-          </button>
-          <button
-            onClick={signIn}
-            className="bg-orange-500 text-white px-4 py-2 rounded"
-          >
-            登录
-          </button>
-        </div>
+    <div className="min-h-screen font-sans flex flex-col bg-gradient-to-br from-orange-50 to-white">
+      <header className="flex justify-between items-center p-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-orange-400 bg-clip-text text-transparent">
+          Readecho
+        </h1>
+        <button
+          onClick={() => window.open('https://readecho.cn', '_blank')}
+          className="px-6 py-2 text-sm text-white bg-gradient-to-r from-orange-500 to-orange-400 rounded-md hover:opacity-90 transition-opacity"
+        >
+          网页版
+        </button>
       </header>
 
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <div className="md:w-1/2">
-            <h2 className="text-3xl font-bold mb-4">同步你的微信读书笔记</h2>
-            <p className="text-xl mb-6">让回顾释放知识的力量！</p>
-            <ul className="mb-6">
-              {features.map((feature, index) => (
-                <li key={index} className="flex items-center mb-2">
-                  <BookOpen className="mr-2 text-orange-500" size={20} />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <p className="text-sm text-gray-600 mb-4">...更多功能，敬请期待</p>
+      <main className="flex-grow container mx-auto px-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-12 mt-12">
+          <div className="md:w-1/2 max-w-xl">
+            <div className="text-left">
+              <h2 className="text-4xl font-bold text-gray-800 mb-2">
+                同步你的微信读书笔记
+              </h2>
+              <p className="text-xl text-gray-800 mb-10">
+                让回顾释放知识的力量！
+              </p>
+              <ul className="space-y-3 text-gray-700 mb-12 text-xs">
+                {features.map((feature, index) => (
+                  <li key={index}>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
             <div className="flex space-x-4">
               <button
                 onClick={signUp}
-                className="bg-orange-500 text-white px-6 py-2 rounded flex items-center"
+                className="bg-gradient-to-r from-orange-500 to-orange-400 text-white px-8 py-3 rounded-lg hover:opacity-90 transition-opacity shadow-lg shadow-orange-200 text-lg"
               >
-                <span className="mr-2">免费注册</span>
+                免费注册
               </button>
               <button
                 onClick={signIn}
-                className="border border-orange-500 text-orange-500 px-6 py-2 rounded flex items-center"
+                className="bg-white text-orange-500 px-8 py-3 rounded-lg hover:bg-orange-50 transition-colors text-lg"
               >
-                <Play className="mr-2" size={20} />
-                <span>已经有账号？点此登录</span>
+                已有账号？登录
               </button>
             </div>
           </div>
-          <div className="md:w-1/2 grid grid-cols-3 gap-4 mt-8 md:mt-0">
+          <div className="md:w-1/2 grid grid-cols-3 gap-4 p-4">
             {books.map((book, index) => (
-              <img
+              <div
                 key={index}
-                src={book.cover}
-                alt={book.title}
-                className="w-full h-auto"
-              />
+                className="transform hover:scale-105 transition-transform duration-200"
+              >
+                <img
+                  src={book.cover}
+                  alt={book.title}
+                  className="w-full h-auto rounded-lg shadow-md"
+                />
+              </div>
             ))}
           </div>
         </div>
       </main>
 
-      <footer className="bg-white py-4 mt-8">
+      <footer className="py-6">
         <div className="container mx-auto flex justify-center items-center space-x-8"></div>
       </footer>
     </div>

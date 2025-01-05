@@ -16,6 +16,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+
+  // fixme:有个bug，打开多个新标签页，会重复请求获取随机笔记
   useEffect(() => {
     // 获取用户信息
     fetchUserInfoService().then((res) => {

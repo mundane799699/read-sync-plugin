@@ -164,14 +164,6 @@ const Home: FC = () => {
             >
               查看笔记
             </button>
-            <button
-              onClick={() => {
-                nav("/review");
-              }}
-              className="px-4 py-2 text-sm font-medium  bg-orange-400 rounded-md hover:bg-orange-500 text-white"
-            >
-              回顾
-            </button>
           </div>
           {isWxReadLoggedIn && (
             <div className="absolute top-2 left-4 space-x-2">

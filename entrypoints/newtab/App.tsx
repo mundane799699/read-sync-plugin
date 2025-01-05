@@ -140,7 +140,7 @@ const App = () => {
                     </blockquote>
                   </div>
                 )}
-                <div className="leading-relaxed text-gray-800">
+                <div className="leading-relaxed text-gray-800 text-base">
                   {currentNote.noteContent}
                 </div>
                 {currentNote.chapterName && (

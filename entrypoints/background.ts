@@ -3,14 +3,28 @@ import axios from "axios";
 export default defineBackground(() => {
   console.log("Hello background!", { id: browser.runtime.id });
 
-  // 检查是否启用新标签页
+  // 监听新标签页创建
   browser.tabs.onCreated.addListener(async (tab) => {
-    const { enableNewTab } = await browser.storage.local.get("enableNewTab");
+    try {
+      const result = await browser.storage.local.get("enableNewTab");
+      const enableNewTab = result.enableNewTab ?? true; // 默认为 true
 
-    if (tab.url === "chrome://newtab/" && !enableNewTab) {
-      await browser.tabs.update(tab.id, {
-        url: "chrome://newtab",
-      });
+      if (
+        tab.pendingUrl === "about:newtab" ||
+        tab.url === "about:newtab" ||
+        tab.pendingUrl === "chrome://newtab/" ||
+        tab.url === "chrome://newtab/"
+      ) {
+        if (enableNewTab) {
+          // 如果启用了自定义新标签页，重定向到你的自定义页面
+          await browser.tabs.update(tab.id, {
+            url: "/newtab1.html",
+          });
+        }
+        // 如果禁用了自定义新标签页，不做任何操作，让它保持浏览器默认的新标签页
+      }
+    } catch (error) {
+      console.error("Error handling new tab:", error);
     }
   });
 

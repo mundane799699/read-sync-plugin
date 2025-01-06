@@ -156,6 +156,10 @@ const App = () => {
         className={`fixed right-6 top-6 p-2 rounded-lg transition-colors ${
           currentBackgroundIndex === 0
             ? "text-[#595959] hover:text-[#262626] hover:bg-[#F5F5F5]"
+            : currentBackgroundIndex === 1
+            ? "text-white/80 hover:bg-white/10"
+            : currentBackgroundIndex === 2
+            ? "text-[#2C3333] hover:bg-[#2C3333]/10"
             : currentBackgroundIndex === 3
             ? "text-white/70 hover:bg-white/10"
             : currentBackgroundIndex === 4

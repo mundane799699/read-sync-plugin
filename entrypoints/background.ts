@@ -13,7 +13,9 @@ export default defineBackground(() => {
         tab.pendingUrl === "about:newtab" ||
         tab.url === "about:newtab" ||
         tab.pendingUrl === "chrome://newtab/" ||
-        tab.url === "chrome://newtab/"
+        tab.url === "chrome://newtab/" ||
+        tab.pendingUrl === "edge://newtab/" ||
+        tab.url === "edge://newtab/"
       ) {
         if (enableNewTab) {
           // 如果启用了自定义新标签页，重定向到你的自定义页面

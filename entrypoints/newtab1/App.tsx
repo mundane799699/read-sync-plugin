@@ -96,7 +96,12 @@ const App = () => {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(currentNote?.noteContent || "");
+    const textToCopy = currentNote
+      ? `《${currentNote.bookName}》：${currentNote.markText}${
+          currentNote.noteContent ? `\n\n想法：${currentNote.noteContent}` : ''
+        }`
+      : "";
+    navigator.clipboard.writeText(textToCopy);
     setIsCopied(true);
     setTimeout(() => {
       setIsCopied(false);

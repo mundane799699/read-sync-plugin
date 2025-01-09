@@ -249,7 +249,7 @@ const App = () => {
                   {/* 书籍信息 */}
                   <div className="flex items-center justify-between mt-6 pt-4 text-sm border-t border-[#F0F0F0]">
                     <span className="font-medium text-[#262626]">
-                      {currentNote?.bookName}
+                      {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
                     </span>
                     <span className="text-[#8F8F8F]">
                       {currentNote?.noteTime
@@ -390,7 +390,7 @@ const App = () => {
                           : "text-white/80"
                       }`}
                     >
-                      {currentNote?.bookName}
+                      {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
                     </span>
                     <span
                       className={

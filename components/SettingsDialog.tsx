@@ -1,3 +1,118 @@
+import React from 'react';
+import { X } from "lucide-react";
+import MembershipDialog from "./MembershipDialog";
+
+interface SettingsDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentBackgroundIndex: number;
+  setCurrentBackgroundIndex: (index: number) => void;
+  showClock: boolean;
+  setShowClock: (show: boolean) => void;
+}
+
+const SettingsDialog: React.FC<SettingsDialogProps> = ({
+  isOpen,
+  onClose,
+  currentBackgroundIndex,
+  setCurrentBackgroundIndex,
+  showClock,
+  setShowClock,
+}) => {
+  const [selectedBook, setSelectedBook] = React.useState("全部笔记");
+  const [reviewCount, setReviewCount] = React.useState("5");
+  const [showMembership, setShowMembership] = React.useState(false);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-96 relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <h2 className="text-lg font-medium text-gray-900 mb-6">设置</h2>
+
+        <div className="space-y-6">
+          {/* 背景设置 */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-700">背景</span>
+            <button
+              onClick={() => setCurrentBackgroundIndex(currentBackgroundIndex + 1)}
+              className="bg-gray-200 hover:bg-gray-300 rounded-lg px-4 py-2 transition-colors"
+            >
+              切换背景
+            </button>
+          </div>
+
+          {/* 时钟设置 */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-700">显示时钟</span>
+            <button
+              onClick={() => setShowClock(!showClock)}
+              className={`${
+                showClock ? 'bg-[#FF725F]' : 'bg-gray-200'
+              } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none`}
+            >
+              <span className="sr-only">显示时钟</span>
+              <span
+                className={`${
+                  showClock ? 'translate-x-6' : 'translate-x-1'
+                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+              />
+            </button>
+          </div>
+
+          {/* 其他设置 */}
+          <div>
+            <label className="block text-sm text-gray-700 mb-2">
+              每次回顾数量
+            </label>
+            <select
+              value={reviewCount}
+              onChange={(e) => setReviewCount(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg p-2"
+            >
+              <option value="5">5条</option>
+              <option value="10">10条</option>
+              <option value="15">15条</option>
+              <option value="20">20条</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-2">
+              选择书籍
+            </label>
+            <select
+              value={selectedBook}
+              onChange={(e) => setSelectedBook(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg p-2"
+            >
+              <option value="全部笔记">全部笔记</option>
+              <option value="最近阅读">最近阅读</option>
+            </select>
+          </div>
+
+          {/* Pro Button */}
+          <button
+            onClick={() => setShowMembership(true)}
+            className="w-full bg-gradient-to-r from-[#FF725F] to-[#FF8D6B] text-white rounded-lg py-2 hover:opacity-90 transition-opacity"
+          >
+            升级 Pro
+          </button>
+        </div>
+      </div>
+
+      <MembershipDialog
+        isOpen={showMembership}
+        onClose={() => setShowMembership(false)}
+      />
+    </div>
 import { X } from "lucide-react";
 import MembershipDialog from "./MembershipDialog";
 

@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import ShareDialog from "@/components/ShareDialog";
 import { fetchUserInfoService } from "@/services/login";
 import { getRandomReview } from "@/services/wxReadNote";
-import { Note } from "@/types/font-['Georgia','Cambria','Times New Roman','Times',serif]font-['Georgia','Cambria','Times New Roman','Times',serif]";
+import { Note } from "@/types/note";
 import { Share2, Copy, Check, Shuffle, Image, Settings, ArrowUp } from "lucide-react";
 import dayjs from "dayjs";
 import Modal from "@/components/Modal";
-import SettingsDialog from "@/components/SettingsDialog";
 
 const backgrounds = [
   new URL("/backgrounds/bg1.png", import.meta.url).href,

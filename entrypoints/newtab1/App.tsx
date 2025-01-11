@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import ShareDialog from "@/components/ShareDialog";
 import { fetchUserInfoService } from "@/services/login";
 import { getRandomReview } from "@/services/wxReadNote";
-import { Note } from "@/types/note";
-import { Share2, Copy, Check, Shuffle, Image, Settings } from "lucide-react";
+import { Note } from "@/types/font-['Georgia','Cambria','Times New Roman','Times',serif]font-['Georgia','Cambria','Times New Roman','Times',serif]";
+import { Share2, Copy, Check, Shuffle, Image, Settings, ArrowUp } from "lucide-react";
 import dayjs from "dayjs";
 import Modal from "@/components/Modal";
 import SettingsDialog from "@/components/SettingsDialog";
@@ -22,6 +22,8 @@ console.log("Available backgrounds:", backgrounds);
 const App = () => {
   const [user, setUser] = useState(null);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const [noteHistory, setNoteHistory] = useState<Note[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const [readCount, setReadCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -66,6 +68,30 @@ const App = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // 只有在有用户且加载完成时才处理键盘事件
+      if (!user || isLoading) return;
+      
+      // 右方向键触发随机回顾
+      if (event.key === 'ArrowRight') {
+        handleRandomNote();
+      }
+      // 左方向键触发上一个（如果有历史记录）
+      else if (event.key === 'ArrowLeft' && historyIndex > 0) {
+        handlePreviousNote();
+      }
+    };
+
+    // 添加键盘事件监听
+    window.addEventListener('keydown', handleKeyDown);
+
+    // 清理函数
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [user, isLoading, historyIndex]); // 依赖项包含所有需要的状态
+
   const signIn = () => {
     browser.tabs.create({
       url: `${import.meta.env.VITE_BASE_WEB}/signin`,
@@ -85,6 +111,9 @@ const App = () => {
             setIsModalOpen(true);
           } else {
             setCurrentNote(note);
+            // 添加到历史记录
+            setNoteHistory(prev => [...prev, note]);
+            setHistoryIndex(prev => prev + 1);
             setReadCount(readCount);
             setTotalCount(totalCount);
           }
@@ -93,6 +122,15 @@ const App = () => {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  const handlePreviousNote = () => {
+    if (historyIndex > 0) {
+      const previousNote = noteHistory[historyIndex - 1];
+      setCurrentNote(previousNote);
+      setHistoryIndex(prev => prev - 1);
+      setReadCount(prev => prev - 1);
+    }
   };
 
   const handleCopy = () => {
@@ -149,6 +187,8 @@ const App = () => {
         backgroundImage:
           currentBackgroundIndex === 0
             ? `linear-gradient(rgba(245, 242, 236, 0.9), rgba(245, 242, 236, 0.9)), url("${backgrounds[currentBackgroundIndex]}")`
+            : currentBackgroundIndex === 5
+            ? `linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), url("${backgrounds[currentBackgroundIndex]}")`
             : `url("${backgrounds[currentBackgroundIndex]}")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -227,19 +267,19 @@ const App = () => {
                   <div className="flex-1">
                     {currentNote?.markText && (
                       <div className="relative pl-4 mb-6">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF725F] rounded-full"></div>
-                        <blockquote className="text-lg font-medium text-[#262626]">
+                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#FF725F] rounded-full opacity-80"></div>
+                        <blockquote className="text-lg font-['Noto Serif SC',serif] text-[#262626] leading-relaxed tracking-wide">
                           {currentNote.markText}
                         </blockquote>
                       </div>
                     )}
 
                     <div>
-                      <div className="text-base leading-relaxed text-[#595959]">
+                      <div className="text-base font-['Noto Serif SC',serif] leading-relaxed text-[#595959] tracking-wide">
                         {currentNote?.noteContent}
                       </div>
                       {currentNote?.chapterName && (
-                        <div className="mt-4 text-sm text-[#8F8F8F]">
+                        <div className="mt-4 text-sm text-[#8F8F8F] font-light tracking-wider">
                           {currentNote.chapterName}
                         </div>
                       )}
@@ -247,11 +287,16 @@ const App = () => {
                   </div>
 
                   {/* 书籍信息 */}
-                  <div className="flex items-center justify-between mt-6 pt-4 text-sm border-t border-[#F0F0F0]">
-                    <span className="font-medium text-[#262626]">
+                  <div className="flex items-center justify-between mt-6 pt-4 text-sm border-t border-[#F0F0F0]/60">
+                    <a
+                      href={`https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-['Noto Serif SC',serif] text-[#262626] hover:text-[#FF725F] transition-colors cursor-pointer tracking-wide"
+                    >
                       {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
-                    </span>
-                    <span className="text-[#8F8F8F]">
+                    </a>
+                    <span className="text-[#8F8F8F] font-light tracking-wider">
                       {currentNote?.noteTime
                         ? dayjs.unix(currentNote.noteTime).format("YYYY-MM-DD")
                         : ""}
@@ -265,93 +310,34 @@ const App = () => {
                 {/* 时钟显示 - 只在bg4下显示 */}
                 {currentBackgroundIndex === 3 && (
                   <div className="absolute -top-40 left-0 right-0 flex justify-center">
-                    <div className="text-8xl font-['serif,Georgia'] text-white/70">
+                    <div className="text-8xl font-['Noto Serif SC',serif] text-white/70 tracking-widest">
                       {currentTime}
                     </div>
                   </div>
                 )}
 
-                {/* 顶部工具栏 - 悬浮时显示 */}
-                <div className="absolute -top-12 left-0 right-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-8">
-                  <span
-                    className={`text-sm ${
-                      currentBackgroundIndex === 2
-                        ? "text-[#006D11]/90"
-                        : currentBackgroundIndex === 3
-                        ? "text-white/60"
-                        : currentBackgroundIndex === 4
-                        ? "text-[#2C3333]/90"
-                        : currentBackgroundIndex === 5
-                        ? "text-[#2D5A27]/90"
-                        : "text-white/80"
-                    }`}
-                  >
-                    回顾进度：{readCount}/{totalCount}
-                  </span>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowShareDialog(true)}
-                      className={`p-2 rounded-lg transition-colors group/btn inline-flex items-center justify-center relative ${
-                        currentBackgroundIndex === 2
-                          ? "text-[#006D11]/90 hover:bg-[#006D11]/10"
-                          : currentBackgroundIndex === 3
-                          ? "text-white/60 hover:bg-white/10"
-                          : currentBackgroundIndex === 4
-                          ? "text-[#2C3333]/90 hover:bg-[#2C3333]/10"
-                          : currentBackgroundIndex === 5
-                          ? "text-[#2D5A27]/90 hover:bg-[#2D5A27]/10"
-                          : "text-white/80 hover:bg-white/10"
-                      }`}
-                      aria-label="分享"
-                    >
-                      <Share2 className="h-5 w-5" strokeWidth={1.5} />
-                      <span className="absolute hidden group-hover/btn:block -top-8 -left-3 bg-black/60 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        分享笔记
-                      </span>
-                    </button>
-                    <button
-                      onClick={handleCopy}
-                      className={`p-2 rounded-lg transition-colors group/btn inline-flex items-center justify-center relative ${
-                        currentBackgroundIndex === 2
-                          ? "text-[#006D11]/90 hover:bg-[#006D11]/10"
-                          : currentBackgroundIndex === 3
-                          ? "text-white/60 hover:bg-white/10"
-                          : currentBackgroundIndex === 4
-                          ? "text-[#2C3333]/90 hover:bg-[#2C3333]/10"
-                          : currentBackgroundIndex === 5
-                          ? "text-[#2D5A27]/90 hover:bg-[#2D5A27]/10"
-                          : "text-white/80 hover:bg-white/10"
-                      }`}
-                      aria-label={isCopied ? "已复制" : "复制内容"}
-                    >
-                      {isCopied ? (
-                        <Check className="h-5 w-5" strokeWidth={1.5} />
-                      ) : (
-                        <Copy className="h-5 w-5" strokeWidth={1.5} />
-                      )}
-                      <span className="absolute hidden group-hover/btn:block -top-8 -left-3 bg-black/60 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        {isCopied ? "已复制!" : "复制内容"}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
                 <div className="space-y-8 px-8">
                   {currentNote?.markText && (
                     <div
-                      className={`line-clamp-5 text-center text-xl md:text-3xl font-['serif,Georgia'] ${
+                      className={`line-clamp-5 text-center text-xl md:text-3xl ${
                         currentBackgroundIndex === 2
-                          ? "text-[#006D11]"
+                          ? "font-['Noto Serif SC',serif] text-[#006D11] text-shadow-green"
                           : currentBackgroundIndex === 3
-                          ? "text-white/70"
+                          ? "font-['Noto Serif SC',serif] text-white/80 text-shadow-light"
                           : currentBackgroundIndex === 4
-                          ? "text-[#2C3333]"
+                          ? "font-['Noto Serif SC',serif] text-[#2C3333] text-shadow-dark"
                           : currentBackgroundIndex === 5
-                          ? "text-[#2D5A27]"
-                          : "text-white/90"
-                      }`}
-                      style={{ lineHeight: "1.5em", letterSpacing: "0.03em" }}
+                          ? "font-['Georgia','Cambria','Times New Roman','Times',serif] text-[#006D11]/90 text-shadow-forest"
+                          : "font-['Noto Serif SC',serif] text-white/90 text-shadow-light"
+                      } tracking-wide`}
+                      style={{ 
+                        lineHeight: '1.8em',
+                        textShadow: currentBackgroundIndex === 0 
+                          ? 'none' 
+                          : currentBackgroundIndex === 5
+                          ? '0 1px 1px rgba(255,255,255,0.6)'
+                          : '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
                     >
                       {currentNote.markText}
                     </div>
@@ -359,39 +345,56 @@ const App = () => {
 
                   {currentNote?.noteContent && (
                     <div
-                      className={`line-clamp-5 text-center text-lg md:text-2xl font-['serif,Georgia'] ${
+                      className={`line-clamp-5 text-center text-lg md:text-2xl ${
                         currentBackgroundIndex === 2
-                          ? "text-[#006D11]"
+                          ? "font-['Noto Serif SC',serif] text-[#006D11]/90 text-shadow-green"
                           : currentBackgroundIndex === 3
-                          ? "text-white/70"
+                          ? "font-['Noto Serif SC',serif] text-white/70 text-shadow-light"
                           : currentBackgroundIndex === 4
-                          ? "text-[#2C3333]"
+                          ? "font-['Noto Serif SC',serif] text-[#2C3333]/90 text-shadow-dark"
                           : currentBackgroundIndex === 5
-                          ? "text-[#2D5A27]"
-                          : "text-white/90"
-                      }`}
-                      style={{ lineHeight: "1.5em", letterSpacing: "0.03em" }}
+                          ? "font-['Georgia','Cambria','Times New Roman','Times',serif] text-[#006D11]/80 text-shadow-forest"
+                          : "font-['Noto Serif SC',serif] text-white/80 text-shadow-light"
+                      } tracking-wide`}
+                      style={{ 
+                        lineHeight: '1.8em',
+                        textShadow: currentBackgroundIndex === 0 
+                          ? 'none' 
+                          : currentBackgroundIndex === 5
+                          ? '0 1px 1px rgba(255,255,255,0.6)'
+                          : '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
                     >
                       {currentNote.noteContent}
                     </div>
                   )}
 
                   <div className="flex flex-col items-center space-y-2">
-                    <span
-                      className={`text-base font-['serif,Georgia'] ${
+                    <a
+                      href={`https://readecho.cn/dashboard/notes?bookId=${currentNote?.bookId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`text-base ${
                         currentBackgroundIndex === 2
-                          ? "text-[#006D11]/80"
+                          ? "font-['Noto Serif SC',serif] text-[#006D11]/80 hover:text-[#006D11]"
                           : currentBackgroundIndex === 3
-                          ? "text-white/60"
+                          ? "font-['Noto Serif SC',serif] text-white/70 hover:text-white/90"
                           : currentBackgroundIndex === 4
-                          ? "text-[#2C3333]/80"
+                          ? "font-['Noto Serif SC',serif] text-[#2C3333]/80 hover:text-[#2C3333]"
                           : currentBackgroundIndex === 5
-                          ? "text-[#2D5A27]/80"
-                          : "text-white/80"
-                      }`}
+                          ? "font-['Georgia','Cambria','Times New Roman','Times',serif] text-[#006D11]/80 hover:text-[#006D11]"
+                          : "font-['Noto Serif SC',serif] text-white/80 hover:text-white"
+                      } tracking-wide hover:underline transition-all duration-300`}
+                      style={{ 
+                        textShadow: currentBackgroundIndex === 0 
+                          ? 'none' 
+                          : currentBackgroundIndex === 5
+                          ? '0 1px 1px rgba(255,255,255,0.6)'
+                          : '0 1px 2px rgba(0,0,0,0.1)'
+                      }}
                     >
                       {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
-                    </span>
+                    </a>
                     <span
                       className={
                         currentBackgroundIndex === 2
@@ -401,7 +404,7 @@ const App = () => {
                           : currentBackgroundIndex === 4
                           ? "text-[#2C3333]/60"
                           : currentBackgroundIndex === 5
-                          ? "text-[#2D5A27]/60"
+                          ? "text-[#4A7856]/60"
                           : "text-white/60"
                       }
                     >
@@ -421,23 +424,44 @@ const App = () => {
               currentBackgroundIndex !== 0 ? "-mt-12" : ""
             }`}
           >
-            <button
-              onClick={handleRandomNote}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-colors ${
-                currentBackgroundIndex === 0
-                  ? "bg-[#FF725F] text-white hover:bg-[#FF725F]/90"
-                  : currentBackgroundIndex === 3
-                  ? "bg-white/5 text-white/70 hover:bg-white/10 backdrop-blur-sm"
-                  : currentBackgroundIndex === 4
-                  ? "bg-[#2C3333]/10 text-[#2C3333] hover:bg-[#2C3333]/20 backdrop-blur-sm"
-                  : currentBackgroundIndex === 5
-                  ? "bg-[#2D5A27]/10 text-[#2D5A27] hover:bg-[#2D5A27]/20 backdrop-blur-sm"
-                  : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
-              }`}
-            >
-              <Shuffle className="h-4 w-4" />
-              随机回顾
-            </button>
+            <div className="relative group">
+              {historyIndex > 0 && (
+                <button
+                  onClick={handlePreviousNote}
+                  className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 whitespace-nowrap ${
+                    currentBackgroundIndex === 0
+                      ? "bg-white text-[#FF725F] border border-[#FF725F] hover:bg-[#FF725F]/5"
+                      : currentBackgroundIndex === 3
+                      ? "bg-white/5 text-white/70 hover:bg-white/10 backdrop-blur-sm"
+                      : currentBackgroundIndex === 4
+                      ? "bg-[#2C3333]/5 text-[#2C3333] hover:bg-[#2C3333]/10 backdrop-blur-sm"
+                      : currentBackgroundIndex === 5
+                      ? "bg-[#2D5A27]/5 text-[#2D5A27] hover:bg-[#2D5A27]/10 backdrop-blur-sm"
+                      : "bg-white/5 text-white hover:bg-white/10 backdrop-blur-sm"
+                  }`}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                  上一个
+                </button>
+              )}
+              <button
+                onClick={handleRandomNote}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg transition-colors ${
+                  currentBackgroundIndex === 0
+                    ? "bg-[#FF725F] text-white hover:bg-[#FF725F]/90"
+                    : currentBackgroundIndex === 3
+                    ? "bg-white/5 text-white/70 hover:bg-white/10 backdrop-blur-sm"
+                    : currentBackgroundIndex === 4
+                    ? "bg-[#2C3333]/10 text-[#2C3333] hover:bg-[#2C3333]/20 backdrop-blur-sm"
+                    : currentBackgroundIndex === 5
+                    ? "bg-[#2D5A27]/10 text-[#2D5A27] hover:bg-[#2D5A27]/20 backdrop-blur-sm"
+                    : "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+                }`}
+              >
+                <Shuffle className="h-4 w-4" />
+                随机回顾
+              </button>
+            </div>
           </div>
 
           {/* 切换背景按钮：固定在右下角 */}

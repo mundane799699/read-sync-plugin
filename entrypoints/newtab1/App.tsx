@@ -222,41 +222,66 @@ const App = () => {
         {/* 内容区：使用 flex-1 自动占据剩余空间 */}
         <div className="flex-1 flex flex-col">
           {/* 内容卡片区域 */}
-          <div className="flex-1 flex flex-col items-center justify-center relative">
-            {/* 顶部工具栏 - 绝对定位 */}
-            {currentBackgroundIndex === 0 && (
-              <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-1 text-[#595959]">
-                <span className="text-sm">
-                  回顾进度：{readCount}/{totalCount}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowShareDialog(true)}
-                    className="p-2 text-[#595959] hover:text-[#262626] hover:bg-[#F5F5F5] rounded-lg transition-colors group inline-flex items-center justify-center relative"
-                    aria-label="分享"
-                  >
-                    <Share2 className="h-5 w-5" strokeWidth={1.5} />
-                    <span className="absolute hidden group-hover:block -top-8 -left-3 bg-[#262626] text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                      分享笔记
-                    </span>
-                  </button>
-                  <button
-                    onClick={handleCopy}
-                    className="p-2 text-[#595959] hover:text-[#262626] hover:bg-[#F5F5F5] rounded-lg transition-colors group inline-flex items-center justify-center relative"
-                    aria-label={isCopied ? "已复制" : "复制内容"}
-                  >
-                    {isCopied ? (
-                      <Check className="h-5 w-5" strokeWidth={1.5} />
-                    ) : (
-                      <Copy className="h-5 w-5" strokeWidth={1.5} />
-                    )}
-                    <span className="absolute hidden group-hover:block -top-8 -left-3 bg-[#262626] text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                      {isCopied ? "已复制!" : "复制内容"}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            )}
+          <div className="flex-1 flex flex-col items-center justify-center relative group">
+            {/* 左上角进度 */}
+            <div className={`absolute top-[15px] left-8 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+              currentBackgroundIndex === 0
+                ? "text-gray-500"
+                : currentBackgroundIndex === 2
+                ? "text-[#006D11]/90"
+                : currentBackgroundIndex === 3
+                ? "text-white/80"
+                : currentBackgroundIndex === 4
+                ? "text-[#2C3333]"
+                : currentBackgroundIndex === 5
+                ? "text-[#006D11]/90"
+                : "text-white/90"
+            }`}>
+              回顾进度：{readCount}/{totalCount}
+            </div>
+
+            {/* 右上角按钮组 */}
+            <div className="flex items-center gap-[20px] absolute top-[15px] right-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              {/* 复制按钮 */}
+              <button
+                onClick={handleCopy}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  currentBackgroundIndex === 0
+                    ? "hover:bg-gray-100 text-gray-500"
+                    : currentBackgroundIndex === 2
+                    ? "hover:bg-white/10 text-[#006D11]/90"
+                    : currentBackgroundIndex === 3
+                    ? "hover:bg-white/10 text-white/80"
+                    : currentBackgroundIndex === 4
+                    ? "hover:bg-white/10 text-[#2C3333]"
+                    : currentBackgroundIndex === 5
+                    ? "hover:bg-white/10 text-[#006D11]/90"
+                    : "hover:bg-white/10 text-white/90"
+                }`}
+              >
+                {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </button>
+
+              {/* 分享按钮 */}
+              <button
+                onClick={() => setShowShareDialog(true)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  currentBackgroundIndex === 0
+                    ? "hover:bg-gray-100 text-gray-500"
+                    : currentBackgroundIndex === 2
+                    ? "hover:bg-white/10 text-[#006D11]/90"
+                    : currentBackgroundIndex === 3
+                    ? "hover:bg-white/10 text-white/80"
+                    : currentBackgroundIndex === 4
+                    ? "hover:bg-white/10 text-[#2C3333]"
+                    : currentBackgroundIndex === 5
+                    ? "hover:bg-white/10 text-[#006D11]/90"
+                    : "hover:bg-white/10 text-white/90"
+                }`}
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+            </div>
 
             {/* 内容卡片 */}
             {currentBackgroundIndex === 0 ? (

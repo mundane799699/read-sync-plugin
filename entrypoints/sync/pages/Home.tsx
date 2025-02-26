@@ -16,8 +16,9 @@ const Home = () => {
   const [books, setBooks] = useState([]);
   const [isWxReadLoggedIn, setIsWxReadLoggedIn] = useState(false);
   const [showNewTabDialog, setShowNewTabDialog] = useState(false);
-  const [syncStats, setSyncStats] = useState({ used: 0, total: maxSyncCount });
-  const syncStatsRef = useRef({ used: 0, total: maxSyncCount });
+  const [usedSyncCount, setUsedSyncCount] = useState(0);
+  const usedSyncCountRef = useRef(0);
+  const [hasMember, setHasMember] = useState(false);
   const [memberInfo, setMemberInfo] = useState({
     memberExpireTime: "",
     memberType: "FREE",
@@ -37,6 +38,7 @@ const Home = () => {
       if (code === 200) {
         const { memberExpireTime, memberType } = data;
         setMemberInfo({ memberExpireTime, memberType });
+        setHasMember(hasMembership(memberType, memberExpireTime));
       }
     });
   }, [user, loading]);
@@ -49,8 +51,8 @@ const Home = () => {
     getNotesCount().then((res) => {
       const { code, data, msg } = res;
       if (code === 200) {
-        setSyncStats({ used: data, total: maxSyncCount });
-        syncStatsRef.current.used = data;
+        setUsedSyncCount(data);
+        usedSyncCountRef.current = data;
       } else {
         toast.error(msg);
       }
@@ -95,7 +97,7 @@ const Home = () => {
   };
 
   const checkMembershipStatus = () => {
-    if (syncStatsRef.current.used >= maxSyncCount) {
+    if (usedSyncCountRef.current >= maxSyncCount) {
       if (memberInfo.memberType === "FREE") {
         setShowPaymentModal(true);
         setTitle("已达到免费用户同步次数上限");
@@ -108,6 +110,18 @@ const Home = () => {
         setTitle("会员已过期，请及时续费");
         return false;
       }
+    }
+    return true;
+  };
+
+  const hasMembership = (memberType: any, memberExpireTime: any) => {
+    if (memberType === "FREE") {
+      return false;
+    } else if (
+      memberExpireTime &&
+      new Date(memberExpireTime).getTime() < new Date().getTime()
+    ) {
+      return false;
     }
     return true;
   };
@@ -176,11 +190,8 @@ const Home = () => {
           prevList.find((item) => item.bookId === bookId).syncFinished = true;
           return [...prevList];
         });
-        setSyncStats({
-          used: res.data,
-          total: maxSyncCount,
-        });
-        syncStatsRef.current.used = res.data;
+        setUsedSyncCount(res.data);
+        usedSyncCountRef.current = res.data;
       } else {
         if (showToast) {
           toast.error(`同步失败，${msg}`);
@@ -255,7 +266,7 @@ const Home = () => {
                 一键同步
               </button>
               <div className="text-sm text-gray-600 mr-2">
-                同步数：{syncStats.used}/{syncStats.total}
+                同步数：{usedSyncCount}/{hasMember ? "无限制" : maxSyncCount}
               </div>
             </div>
           )}

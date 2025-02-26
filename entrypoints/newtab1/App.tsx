@@ -3,9 +3,18 @@ import ShareDialog from "@/components/ShareDialog";
 import { fetchUserInfoService } from "@/services/login";
 import { getRandomReview } from "@/services/wxReadNote";
 import { Note } from "@/types/note";
-import { Share2, Copy, Check, Shuffle, Image, Settings, ArrowUp } from "lucide-react";
+import {
+  Share2,
+  Copy,
+  Check,
+  Shuffle,
+  Image,
+  Settings,
+  ArrowUp,
+} from "lucide-react";
 import dayjs from "dayjs";
 import Modal from "@/components/Modal";
+import NewTabDialog from "@/components/NewTabDialog";
 
 const backgrounds = [
   new URL("/backgrounds/bg1.png", import.meta.url).href,
@@ -15,8 +24,6 @@ const backgrounds = [
   new URL("/backgrounds/bg5.jpg", import.meta.url).href,
   new URL("/backgrounds/bg6.jpg", import.meta.url).href,
 ];
-
-console.log("Available backgrounds:", backgrounds);
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -39,10 +46,7 @@ const App = () => {
 
   const [showNewTabDialog, setShowNewTabDialog] = useState(false);
 
-  useEffect(() => {
-    console.log("Current background index:", currentBackgroundIndex);
-    console.log("Current background URL:", backgrounds[currentBackgroundIndex]);
-  }, [currentBackgroundIndex]);
+  useEffect(() => {}, [currentBackgroundIndex]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -71,23 +75,23 @@ const App = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // 只有在有用户且加载完成时才处理键盘事件
       if (!user || isLoading) return;
-      
+
       // 右方向键触发随机回顾
-      if (event.key === 'ArrowRight') {
+      if (event.key === "ArrowRight") {
         handleRandomNote();
       }
       // 左方向键触发上一个（如果有历史记录）
-      else if (event.key === 'ArrowLeft' && historyIndex > 0) {
+      else if (event.key === "ArrowLeft" && historyIndex > 0) {
         handlePreviousNote();
       }
     };
 
     // 添加键盘事件监听
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     // 清理函数
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [user, isLoading, historyIndex]); // 依赖项包含所有需要的状态
 
@@ -111,8 +115,8 @@ const App = () => {
           } else {
             setCurrentNote(note);
             // 添加到历史记录
-            setNoteHistory(prev => [...prev, note]);
-            setHistoryIndex(prev => prev + 1);
+            setNoteHistory((prev) => [...prev, note]);
+            setHistoryIndex((prev) => prev + 1);
             setReadCount(readCount);
             setTotalCount(totalCount);
           }
@@ -127,15 +131,15 @@ const App = () => {
     if (historyIndex > 0) {
       const previousNote = noteHistory[historyIndex - 1];
       setCurrentNote(previousNote);
-      setHistoryIndex(prev => prev - 1);
-      setReadCount(prev => prev - 1);
+      setHistoryIndex((prev) => prev - 1);
+      setReadCount((prev) => prev - 1);
     }
   };
 
   const handleCopy = () => {
     const textToCopy = currentNote
       ? `《${currentNote.bookName}》：${currentNote.markText}${
-          currentNote.noteContent ? `\n\n想法：${currentNote.noteContent}` : ''
+          currentNote.noteContent ? `\n\n想法：${currentNote.noteContent}` : ""
         }`
       : "";
     navigator.clipboard.writeText(textToCopy);
@@ -155,6 +159,28 @@ const App = () => {
   if (!user) {
     return (
       <div className="bg-orange-100 flex flex-col justify-center items-center h-screen">
+        {/* 新标签页设置按钮 */}
+        <button
+          onClick={() => setShowNewTabDialog(true)}
+          className={`fixed right-6 top-6 p-2 rounded-lg transition-colors ${
+            currentBackgroundIndex === 0
+              ? "text-[#595959] hover:text-[#262626] hover:bg-[#F5F5F5]"
+              : currentBackgroundIndex === 1
+              ? "text-white/80 hover:bg-white/10"
+              : currentBackgroundIndex === 2
+              ? "text-[#2C3333] hover:bg-[#2C3333]/10"
+              : currentBackgroundIndex === 3
+              ? "text-white/70 hover:bg-white/10"
+              : currentBackgroundIndex === 4
+              ? "text-[#2C3333] hover:bg-[#2C3333]/10"
+              : currentBackgroundIndex === 5
+              ? "text-[#2D5A27] hover:bg-[#2D5A27]/10"
+              : "text-white/80 hover:bg-white/10"
+          }`}
+        >
+          <Settings className="h-4 w-4" />
+        </button>
+
         <button
           onClick={signIn}
           className="w-40 text-lg font-bold text-white bg-orange-400 hover:bg-orange-500 rounded-lg border p-4 mt-10"
@@ -167,6 +193,11 @@ const App = () => {
         >
           刷新页面
         </button>
+
+        <NewTabDialog
+          isOpen={showNewTabDialog}
+          onClose={() => setShowNewTabDialog(false)}
+        />
       </div>
     );
   }
@@ -223,19 +254,21 @@ const App = () => {
           {/* 内容卡片区域 */}
           <div className="flex-1 flex flex-col items-center justify-center relative group">
             {/* 左上角进度 */}
-            <div className={`absolute top-[15px] left-8 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
-              currentBackgroundIndex === 0
-                ? "text-gray-500"
-                : currentBackgroundIndex === 2
-                ? "text-[#006D11]/90"
-                : currentBackgroundIndex === 3
-                ? "text-white/80"
-                : currentBackgroundIndex === 4
-                ? "text-[#2C3333]"
-                : currentBackgroundIndex === 5
-                ? "text-[#006D11]/90"
-                : "text-white/90"
-            }`}>
+            <div
+              className={`absolute top-[15px] left-8 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+                currentBackgroundIndex === 0
+                  ? "text-gray-500"
+                  : currentBackgroundIndex === 2
+                  ? "text-[#006D11]/90"
+                  : currentBackgroundIndex === 3
+                  ? "text-white/80"
+                  : currentBackgroundIndex === 4
+                  ? "text-[#2C3333]"
+                  : currentBackgroundIndex === 5
+                  ? "text-[#006D11]/90"
+                  : "text-white/90"
+              }`}
+            >
               回顾进度：{readCount}/{totalCount}
             </div>
 
@@ -258,7 +291,11 @@ const App = () => {
                     : "hover:bg-white/10 text-white/90"
                 }`}
               >
-                {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {isCopied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </button>
 
               {/* 分享按钮 */}
@@ -318,7 +355,10 @@ const App = () => {
                       rel="noopener noreferrer"
                       className="font-['Noto Serif SC',serif] text-[#262626] hover:text-[#FF725F] transition-colors cursor-pointer tracking-wide"
                     >
-                      {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
+                      {currentNote?.bookName}
+                      {currentNote?.bookAuthor
+                        ? ` / ${currentNote.bookAuthor}`
+                        : ""}
                     </a>
                     <span className="text-[#8F8F8F] font-light tracking-wider">
                       {currentNote?.noteTime
@@ -354,13 +394,14 @@ const App = () => {
                           ? "font-['Georgia','Cambria','Times New Roman','Times',serif] text-[#006D11]/90 text-shadow-forest"
                           : "font-['Noto Serif SC',serif] text-white/90 text-shadow-light"
                       } tracking-wide`}
-                      style={{ 
-                        lineHeight: '1.8em',
-                        textShadow: currentBackgroundIndex === 0 
-                          ? 'none' 
-                          : currentBackgroundIndex === 5
-                          ? '0 1px 1px rgba(255,255,255,0.6)'
-                          : '0 2px 4px rgba(0,0,0,0.1)'
+                      style={{
+                        lineHeight: "1.8em",
+                        textShadow:
+                          currentBackgroundIndex === 0
+                            ? "none"
+                            : currentBackgroundIndex === 5
+                            ? "0 1px 1px rgba(255,255,255,0.6)"
+                            : "0 2px 4px rgba(0,0,0,0.1)",
                       }}
                     >
                       {currentNote.markText}
@@ -380,13 +421,14 @@ const App = () => {
                           ? "font-['Georgia','Cambria','Times New Roman','Times',serif] text-[#006D11]/80 text-shadow-forest"
                           : "font-['Noto Serif SC',serif] text-white/80 text-shadow-light"
                       } tracking-wide`}
-                      style={{ 
-                        lineHeight: '1.8em',
-                        textShadow: currentBackgroundIndex === 0 
-                          ? 'none' 
-                          : currentBackgroundIndex === 5
-                          ? '0 1px 1px rgba(255,255,255,0.6)'
-                          : '0 2px 4px rgba(0,0,0,0.1)'
+                      style={{
+                        lineHeight: "1.8em",
+                        textShadow:
+                          currentBackgroundIndex === 0
+                            ? "none"
+                            : currentBackgroundIndex === 5
+                            ? "0 1px 1px rgba(255,255,255,0.6)"
+                            : "0 2px 4px rgba(0,0,0,0.1)",
                       }}
                     >
                       {currentNote.noteContent}
@@ -409,15 +451,19 @@ const App = () => {
                           ? "font-['Georgia','Cambria','Times New Roman','Times',serif] text-[#006D11]/80 hover:text-[#006D11]"
                           : "font-['Noto Serif SC',serif] text-white/80 hover:text-white"
                       } tracking-wide hover:underline transition-all duration-300`}
-                      style={{ 
-                        textShadow: currentBackgroundIndex === 0 
-                          ? 'none' 
-                          : currentBackgroundIndex === 5
-                          ? '0 1px 1px rgba(255,255,255,0.6)'
-                          : '0 1px 2px rgba(0,0,0,0.1)'
+                      style={{
+                        textShadow:
+                          currentBackgroundIndex === 0
+                            ? "none"
+                            : currentBackgroundIndex === 5
+                            ? "0 1px 1px rgba(255,255,255,0.6)"
+                            : "0 1px 2px rgba(0,0,0,0.1)",
                       }}
                     >
-                      {currentNote?.bookName}{currentNote?.bookAuthor ? ` / ${currentNote.bookAuthor}` : ''}
+                      {currentNote?.bookName}
+                      {currentNote?.bookAuthor
+                        ? ` / ${currentNote.bookAuthor}`
+                        : ""}
                     </a>
                     <span
                       className={

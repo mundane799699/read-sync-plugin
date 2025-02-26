@@ -2,10 +2,13 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Loader from "@/components/Loader";
 import toast from "react-hot-toast";
-import { FluentArrowSync20Regular } from "@/components/Icons";
 import { syncWxReadNotesService } from "@/services/wxReadNote";
 import { LucideCheck, LucideRefreshCw, UserCircle2 } from "lucide-react";
 import NewTabDialog from "@/components/NewTabDialog";
+import { getNotesCount } from "@/services/wxReadNote";
+import { fetchMemberInfo } from "@/services/login";
+import PaymentModal from "@/components/PaymentModal";
+const maxSyncCount = 100;
 
 const Home = () => {
   const nav = useNavigate();
@@ -13,6 +16,15 @@ const Home = () => {
   const [books, setBooks] = useState([]);
   const [isWxReadLoggedIn, setIsWxReadLoggedIn] = useState(false);
   const [showNewTabDialog, setShowNewTabDialog] = useState(false);
+  const [syncStats, setSyncStats] = useState({ used: 0, total: maxSyncCount });
+  const syncStatsRef = useRef({ used: 0, total: maxSyncCount });
+  const [memberInfo, setMemberInfo] = useState({
+    memberExpireTime: "",
+    memberType: "FREE",
+  });
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [title, setTitle] = useState("");
+
   useEffect(() => {
     if (loading) {
       return;
@@ -20,10 +32,29 @@ const Home = () => {
     if (!user) {
       nav("/login");
     }
+    fetchMemberInfo().then((res) => {
+      const { code, data, msg } = res;
+      if (code === 200) {
+        const { memberExpireTime, memberType } = data;
+        setMemberInfo({ memberExpireTime, memberType });
+      }
+    });
   }, [user, loading]);
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    getNotesCount().then((res) => {
+      const { code, data, msg } = res;
+      if (code === 200) {
+        setSyncStats({ used: data, total: maxSyncCount });
+        syncStatsRef.current.used = data;
+      } else {
+        toast.error(msg);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -48,7 +79,7 @@ const Home = () => {
     const res = await browser.runtime.sendMessage({ type: "fetchNotebooks" });
     const { status, data } = res;
     if (status === 200) {
-      const { books } = data;
+      const { books, syncStats } = data;
       books.map((item: any) => {
         item.syncFinished = false;
       });
@@ -63,7 +94,29 @@ const Home = () => {
     browser.tabs.create({ url: "https://weread.qq.com", active: true });
   };
 
+  const checkMembershipStatus = () => {
+    if (syncStatsRef.current.used >= maxSyncCount) {
+      if (memberInfo.memberType === "FREE") {
+        setShowPaymentModal(true);
+        setTitle("已达到免费用户同步次数上限");
+        return false;
+      } else if (
+        memberInfo.memberExpireTime &&
+        new Date(memberInfo.memberExpireTime).getTime() < new Date().getTime()
+      ) {
+        setShowPaymentModal(true);
+        setTitle("会员已过期，请及时续费");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const sync = async (bookId: string, showToast = true) => {
+    // 检查会员状态
+    if (!checkMembershipStatus()) {
+      return;
+    }
     const res = await browser.runtime.sendMessage({
       type: "syncData",
       params: { bookId },
@@ -123,6 +176,11 @@ const Home = () => {
           prevList.find((item) => item.bookId === bookId).syncFinished = true;
           return [...prevList];
         });
+        setSyncStats({
+          used: res.data,
+          total: maxSyncCount,
+        });
+        syncStatsRef.current.used = res.data;
       } else {
         if (showToast) {
           toast.error(`同步失败，${msg}`);
@@ -132,9 +190,20 @@ const Home = () => {
   };
 
   const syncAll = async () => {
+    let syncedCount = 0;
     for (let i = 0; i < books.length; i++) {
       const book = books[i];
-      await sync(book.bookId, false);
+      // 每次同步前检查会员状态
+      if (!checkMembershipStatus()) {
+        if (syncedCount > 0) {
+          setTitle(
+            `已完成${syncedCount}本书的同步，剩余书籍因为同步次数限制未能同步`
+          );
+        }
+        return;
+      }
+      await sync(book.book.bookId, false);
+      syncedCount++;
     }
     toast.success("同步完成");
   };
@@ -146,10 +215,19 @@ const Home = () => {
       ) : (
         <div className="container mx-auto p-4 relative min-h-screen">
           <div className="absolute top-4 right-4 space-x-3 flex items-center">
-            <div className="flex items-center text-gray-600 mr-2">
+            <div
+              className="flex items-center text-gray-600 mr-2 cursor-pointer"
+              onClick={() => {
+                browser.tabs.create({
+                  url: `${import.meta.env.VITE_BASE_WEB}/profile`,
+                  active: true,
+                });
+              }}
+            >
               <UserCircle2 className="w-5 h-5 mr-1.5" />
               <span className="text-sm">{user?.nickName}</span>
             </div>
+
             <button
               onClick={() =>
                 browser.tabs.create({
@@ -169,13 +247,16 @@ const Home = () => {
             </button>
           </div>
           {isWxReadLoggedIn && (
-            <div className="absolute top-4 left-4">
+            <div className="absolute top-4 left-4 flex items-center space-x-2">
               <button
                 onClick={syncAll}
                 className="px-4 py-2 text-sm bg-orange-400 rounded-md hover:bg-orange-500 text-white transition-colors"
               >
                 一键同步
               </button>
+              <div className="text-sm text-gray-600 mr-2">
+                同步数：{syncStats.used}/{syncStats.total}
+              </div>
             </div>
           )}
           {isWxReadLoggedIn ? (
@@ -237,6 +318,20 @@ const Home = () => {
       <NewTabDialog
         isOpen={showNewTabDialog}
         onClose={() => setShowNewTabDialog(false)}
+      />
+      <PaymentModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        title={title}
+        content="升级会员后，您将解除同步次数限制"
+        buttonText="升级"
+        onConfirm={() => {
+          setShowPaymentModal(false);
+          browser.tabs.create({
+            url: `${import.meta.env.VITE_BASE_WEB}/vip`,
+            active: true,
+          });
+        }}
       />
     </div>
   );

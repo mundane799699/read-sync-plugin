@@ -12,3 +12,7 @@ export async function loginService(loginData: any): Promise<any> {
 export async function fetchUserInfoService(): Promise<any> {
   return await axios.get("/getInfo");
 }
+
+export async function fetchMemberInfo(): Promise<any> {
+  return await axios.get("/system/user/fetchMemberInfo");
+}

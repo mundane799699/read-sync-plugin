@@ -8,7 +8,7 @@ import NewTabDialog from "@/components/NewTabDialog";
 import { getNotesCount } from "@/services/wxReadNote";
 import { fetchMemberInfo } from "@/services/login";
 import PaymentModal from "@/components/PaymentModal";
-const maxSyncCount = 1000;
+const maxSyncCount = 200;
 
 const Home = () => {
   const nav = useNavigate();

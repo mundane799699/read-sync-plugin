@@ -41,7 +41,7 @@ export default defineBackground(() => {
       if (type === "fetchNotebooks") {
         try {
           const response = await axios.get(
-            "https://i.weread.qq.com/user/notebooks",
+            "https://weread.qq.com/api/user/notebook",
             {
               withCredentials: true, // 这相当于 fetch 的 credentials: "include"
             }
@@ -59,8 +59,8 @@ export default defineBackground(() => {
         }
       } else if (type === "syncData") {
         const { bookId } = params;
-        const reviewUrl = "https://i.weread.qq.com/review/list";
-        const bookmarkUrl = "https://i.weread.qq.com/book/bookmarklist";
+        const reviewUrl = "https://weread.qq.com/web/review/list";
+        const bookmarkUrl = "https://weread.qq.com/web/book/bookmarklist";
         try {
           const [reviewResponse, bookmarkResponse] = await Promise.all([
             axios.get(reviewUrl, {

@@ -6,7 +6,11 @@ export default defineConfig({
   manifest: {
     permissions: ["tabs", "cookies", "storage"],
     action: {},
-    host_permissions: ["https://i.weread.qq.com/*", "https://readecho.cn/*"],
+    host_permissions: [
+      "https://i.weread.qq.com/*",
+      "https://readecho.cn/*",
+      "https://weread.qq.com/*",
+    ],
   },
   runner: {
     disabled: true,

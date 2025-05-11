@@ -38,7 +38,7 @@ const Home = () => {
       if (code === 200) {
         const { memberExpireTime, memberType } = data;
         setMemberInfo({ memberExpireTime, memberType });
-        setHasMember(hasMembership(memberType, memberExpireTime));
+        setHasMember(hasMembership(memberType));
       }
     });
   }, [user, loading]);
@@ -102,25 +102,13 @@ const Home = () => {
         setShowPaymentModal(true);
         setTitle("已达到免费用户同步次数上限");
         return false;
-      } else if (
-        memberInfo.memberExpireTime &&
-        new Date(memberInfo.memberExpireTime).getTime() < new Date().getTime()
-      ) {
-        setShowPaymentModal(true);
-        setTitle("会员已过期，请及时续费");
-        return false;
       }
     }
     return true;
   };
 
-  const hasMembership = (memberType: any, memberExpireTime: any) => {
+  const hasMembership = (memberType: any) => {
     if (memberType === "FREE") {
-      return false;
-    } else if (
-      memberExpireTime &&
-      new Date(memberExpireTime).getTime() < new Date().getTime()
-    ) {
       return false;
     }
     return true;

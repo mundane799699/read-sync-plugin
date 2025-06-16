@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Loader from "@/components/Loader";
 import toast from "react-hot-toast";
 import { syncWxReadNotesService } from "@/services/wxReadNote";
-import { LucideCheck, LucideRefreshCw, UserCircle2 } from "lucide-react";
+import { LucideCheck, LucideRefreshCw, UserCircle2, HelpCircle, MessageSquare } from "lucide-react";
 import NewTabDialog from "@/components/NewTabDialog";
 import { getNotesCount } from "@/services/wxReadNote";
 import { fetchMemberInfo } from "@/services/login";
@@ -25,6 +25,7 @@ const Home = () => {
   });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [title, setTitle] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (loading) {
@@ -189,129 +190,198 @@ const Home = () => {
   };
 
   const syncAll = async () => {
+    setIsSyncing(true);
     let syncedCount = 0;
-    for (let i = 0; i < books.length; i++) {
-      const book = books[i];
-      // 每次同步前检查会员状态
-      if (!checkMembershipStatus()) {
-        if (syncedCount > 0) {
-          setTitle(
-            `已完成${syncedCount}本书的同步，剩余书籍因为同步次数限制未能同步`
-          );
+    try {
+      for (let i = 0; i < books.length; i++) {
+        const book = books[i];
+        // 每次同步前检查会员状态
+        if (!checkMembershipStatus()) {
+          if (syncedCount > 0) {
+            setTitle(
+              `已完成${syncedCount}本书的同步，剩余书籍因为同步次数限制未能同步`
+            );
+          }
+          return;
         }
-        return;
+        await sync(book.book.bookId, false);
+        syncedCount++;
       }
-      await sync(book.book.bookId, false);
-      syncedCount++;
+      toast.success("同步完成");
+    } finally {
+      setIsSyncing(false);
     }
-    toast.success("同步完成");
   };
 
   return (
-    <div className="min-h-screen font-sans flex bg-gradient-to-br from-orange-50 to-white">
+    <div className="min-h-screen font-sans flex" style={{backgroundColor: '#f9fafb'}}>
       {loading ? (
         <Loader className="mx-auto mt-10" />
       ) : (
-        <div className="container mx-auto p-4 relative min-h-screen">
-          <div className="absolute top-4 right-4 space-x-3 flex items-center">
-            <div
-              className="flex items-center text-gray-600 mr-2 cursor-pointer"
-              onClick={() => {
-                browser.tabs.create({
-                  url: `${import.meta.env.VITE_BASE_WEB}/profile`,
-                  active: true,
-                });
-              }}
-            >
-              <UserCircle2 className="w-5 h-5 mr-1.5" />
-              <span className="text-sm">{user?.nickName}</span>
+        <div className="container mx-auto min-h-screen flex flex-col">
+          {/* 1. Header区域 */}
+          <header className="sticky top-0 z-10 flex justify-between items-center p-6 border-b border-gray-200" style={{backgroundColor: '#f9fafb'}}>
+            {/* 左侧logo */}
+            <div className="flex items-center gap-2">
+              <img 
+                src="/Readecho-orange.svg" 
+                alt="Readecho" 
+                className="h-6 w-auto"
+              />
+              <span className="text-xs px-2 py-1 rounded-md text-white font-medium" style={{backgroundColor: '#d97b53'}}>
+                插件端
+              </span>
             </div>
-
-            <button
-              onClick={() =>
-                browser.tabs.create({
-                  url: `${import.meta.env.VITE_BASE_WEB}/dashboard`,
-                  active: true,
-                })
-              }
-              className="px-4 py-2 text-sm text-white bg-gradient-to-r from-orange-500 to-orange-400 hover:opacity-90 rounded-md transition-opacity shadow-lg shadow-orange-200"
-            >
-              查看笔记
-            </button>
-            <button
-              onClick={() => setShowNewTabDialog(true)}
-              className="px-4 py-2 text-sm text-orange-500 bg-white border border-orange-400 hover:bg-orange-50 rounded-md transition-colors"
-            >
-              新标签页设置
-            </button>
-          </div>
-          {isWxReadLoggedIn && (
-            <div className="absolute top-4 left-4 flex items-center space-x-2">
-              <button
-                onClick={syncAll}
-                className="px-4 py-2 text-sm bg-orange-400 rounded-md hover:bg-orange-500 text-white transition-colors"
+            
+            {/* 右侧用户信息和操作 */}
+            <div className="flex items-center gap-6">
+              <div
+                className="flex items-center text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
+                onClick={() => window.open('https://v3oxu28gnc.feishu.cn/share/base/form/shrcnkfjw54oxlXzI5cQPvLynKc', '_blank')}
               >
-                一键同步
+                <MessageSquare className="w-5 h-5 mr-1.5" />
+                <span className="text-sm">建议反馈</span>
+              </div>
+              <div
+                className="flex items-center text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
+                onClick={() => window.open('https://v3oxu28gnc.feishu.cn/docx/EQvqdMm3WoqlBjxT7ASc3u0wnKf', '_blank')}
+              >
+                <HelpCircle className="w-5 h-5 mr-1.5" />
+                <span className="text-sm">帮助文档</span>
+              </div>
+              <div
+                className="flex items-center text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
+                onClick={() => {
+                  browser.tabs.create({
+                    url: `${import.meta.env.VITE_BASE_WEB}/profile`,
+                    active: true,
+                  });
+                }}
+              >
+                <UserCircle2 className="w-5 h-5 mr-1.5" />
+                <span className="text-sm">{user?.nickName}</span>
+              </div>
+              <button
+                onClick={() =>
+                  browser.tabs.create({
+                    url: `${import.meta.env.VITE_BASE_WEB}/dashboard`,
+                    active: true,
+                  })
+                }
+                className="px-4 py-2 text-sm text-white hover:opacity-90 rounded-md transition-opacity shadow-lg"
+                style={{backgroundColor: '#d97b53'}}
+              >
+                去网页端
               </button>
-              <div className="text-sm text-gray-600 mr-2">
-                同步数：{usedSyncCount}/{hasMember ? "无限制" : maxSyncCount}
+            </div>
+          </header>
+
+          {/* 2. 按钮区域 */}
+          {isWxReadLoggedIn && (
+            <div className="p-6">
+              <div className="max-w-4xl mx-auto flex items-start justify-between">
+                <div className="flex gap-4">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={syncAll}
+                        disabled={isSyncing}
+                        className={`px-3 py-2 text-sm rounded-md text-white transition-opacity font-medium ${
+                          isSyncing ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'
+                        }`}
+                        style={{backgroundColor: '#d97b53'}}
+                      >
+                        {isSyncing ? '同步中...' : '一键同步'}
+                      </button>
+                      <div className="text-sm text-gray-600">
+                        同步数：{usedSyncCount}/{hasMember ? "无限制" : maxSyncCount}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 -ml-6">
+                      <a 
+                        href="https://readecho.cn/vip"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-80 transition-opacity"
+                        style={{color: '#d97b53'}}
+                      >
+                        开通Plus / Pro
+                      </a>
+                      ，永久无限制同步笔记
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowNewTabDialog(true)}
+                  className="px-4 py-2 text-sm bg-white border hover:bg-gray-50 rounded-md transition-colors"
+                  style={{color: '#d97b53', borderColor: '#d97b53'}}
+                >
+                  插件设置
+                </button>
               </div>
             </div>
           )}
-          {isWxReadLoggedIn ? (
-            <ul className="mt-20 grid grid-cols-2 gap-6 max-w-4xl mx-auto">
-              {books.map((item: any) => (
-                <li
-                  key={item.book.bookId}
-                  className="flex p-4 border border-gray-200 rounded-lg hover:border-orange-200 transition-colors bg-white shadow-sm"
-                >
-                  <img
-                    className="w-20 h-28 object-cover mr-4 rounded"
-                    src={item.book.cover}
-                    alt={item.book.title}
-                  />
-                  <div className="flex flex-1 justify-between">
-                    <div className="flex flex-col justify-between">
-                      <h2 className="text-sm font-medium overflow-hidden overflow-ellipsis line-clamp-2 text-left text-gray-800">
-                        {item.book.title}
-                      </h2>
-                      <h2 className="text-xs text-gray-500 text-left">
-                        划线 (
-                        {`${item.noteCount + item.bookmarkCount}) | 想法 (${
-                          item.reviewCount
-                        })`}
-                      </h2>
-                    </div>
-                    <div className="flex flex-col justify-end">
-                      {item.syncFinished ? (
-                        <LucideCheck
-                          onClick={() => sync(item.book.bookId)}
-                          className="text-orange-400 cursor-pointer hover:text-orange-500"
-                        />
-                      ) : (
-                        <LucideRefreshCw
-                          onClick={() => sync(item.book.bookId)}
-                          className="text-orange-400 cursor-pointer hover:text-orange-500"
-                        />
-                      )}
+
+          {/* 3. 书架区域 */}
+          <main className="flex-1 p-6">
+            {isWxReadLoggedIn ? (
+              <div className="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {books.map((item: any) => (
+                  <div
+                    key={item.book.bookId}
+                    className="flex p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors bg-white shadow-sm"
+                  >
+                    <img
+                      className="w-20 h-28 object-cover mr-4 rounded"
+                      src={item.book.cover}
+                      alt={item.book.title}
+                    />
+                    <div className="flex flex-1 justify-between">
+                      <div className="flex flex-col justify-between">
+                        <h2 className="text-sm font-medium overflow-hidden overflow-ellipsis line-clamp-2 text-left text-gray-800">
+                          {item.book.title}
+                        </h2>
+                        <h2 className="text-xs text-gray-500 text-left">
+                          划线 (
+                          {`${item.noteCount + item.bookmarkCount}) | 想法 (${
+                            item.reviewCount
+                          })`}
+                        </h2>
+                      </div>
+                      <div className="flex flex-col justify-end">
+                        {item.syncFinished ? (
+                          <LucideCheck
+                            onClick={() => sync(item.book.bookId)}
+                            className="cursor-pointer hover:opacity-80"
+                            style={{color: '#d97b53'}}
+                          />
+                        ) : (
+                          <LucideRefreshCw
+                            onClick={() => sync(item.book.bookId)}
+                            className="cursor-pointer hover:opacity-80"
+                            style={{color: '#d97b53'}}
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full">
-              <p className="text-xl text-gray-500">
-                登录微信读书后，Readecho将自动同步你的书架
-              </p>
-              <button
-                onClick={openWxRead}
-                className="text-lg text-white bg-orange-400 hover:bg-orange-500 rounded-lg p-4 mt-10 transition-colors"
-              >
-                登录微信读书
-              </button>
-            </div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
+                <p className="text-xl text-gray-500 mb-6">
+                  登录微信读书后，Readecho将自动同步你的书架
+                </p>
+                <button
+                  onClick={openWxRead}
+                  className="text-lg text-white hover:opacity-90 rounded-lg px-6 py-3 transition-opacity font-medium"
+                  style={{backgroundColor: '#d97b53'}}
+                >
+                  登录微信读书
+                </button>
+              </div>
+            )}
+          </main>
         </div>
       )}
       <NewTabDialog

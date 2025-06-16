@@ -47,7 +47,7 @@ const Login = () => {
 
   const signIn = () => {
     browser.tabs.create({
-      url: `${import.meta.env.VITE_BASE_WEB}/signin`,
+      url: "https://readecho.cn/signin",
       active: true,
     });
   };
